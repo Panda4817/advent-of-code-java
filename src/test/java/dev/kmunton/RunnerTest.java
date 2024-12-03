@@ -2,7 +2,6 @@ package dev.kmunton;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.kmunton.days.Day;
@@ -82,16 +81,8 @@ class RunnerTest {
 
     @Test
     void loadData_correctFilename_returnList() throws FileNotFoundException {
-        String resource = "1.txt";
-        var data = Runner.loadData(resource, getClass());
+        var data = Runner.loadData(getClass());
 
         assertEquals(List.of("1   1", "2   2", "3   3", "4   4", "5   5"), data);
-    }
-
-    @Test
-    void loadData_incorrectFilename_throwException() {
-        String resource = "test.txt";
-
-        assertThrows(FileNotFoundException.class, () -> Runner.loadData(resource, getClass()));
     }
 }

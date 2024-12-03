@@ -15,12 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Runner {
 
+  private static final String INPUT_FILE = "input.txt";
+
   @SuppressWarnings("unchecked")
   public static <T, R> Day<T, R> mapDayToClass(String day) {
     try {
       Class<Day<T, R>> dayClass = (Class<Day<T, R>>) Class.forName("dev.kmunton.days.day" + day + ".Day" + day);
-      String resource = day + ".txt";
-      var data = loadData(resource, dayClass);
+      var data = loadData(dayClass);
       Class<?>[] cArg = {List.class};
       return dayClass.getDeclaredConstructor(cArg).newInstance(data);
     } catch (Exception ex) {
@@ -57,11 +58,11 @@ public class Runner {
 
   }
 
-  public static List<String> loadData(String filename, Class<?> clazz) throws FileNotFoundException {
+  public static List<String> loadData(Class<?> clazz) throws FileNotFoundException {
     List<String> data = new ArrayList<>();
-    var resource = clazz.getClassLoader().getResource(filename);
+    var resource = clazz.getClassLoader().getResource(INPUT_FILE);
     if (Objects.isNull(resource)) {
-      throw new FileNotFoundException("File with name [%s] not found".formatted(filename));
+      throw new FileNotFoundException("File with name [%s] not found".formatted(INPUT_FILE));
     }
     File file = new File(resource.getFile());
     Scanner myReader = new Scanner(file);

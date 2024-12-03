@@ -1,13 +1,12 @@
 # Advent of Code 2024 - Java
 
 ## Create solution
-- Add a class for the day you are completing named 'Day<day_number>'
-- Make sure class implements Day interface
-- Add puzzle input as a text file in resources directory named '<day_number>.txt'
-- Add a private data field of chosen type
+- Add a class for the day you are completing named `Day<day_number>`
+- Make sure class implements `Day` interface
+- Add puzzle input to `input.txt` (this file is in gitignore)
 - Add tests
-- Add a constructor that runs processData method given an input file name
-- Implement processData, part1 and part2 methods of class
+- Add a constructor that runs the `processData` method given an input file name
+- Implement `processData`, `part1` and `part2` methods of class
 
 ## Build
 - ```mvn clean install```
