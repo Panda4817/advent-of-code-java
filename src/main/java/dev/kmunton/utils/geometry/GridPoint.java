@@ -2,6 +2,7 @@ package dev.kmunton.utils.geometry;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public record GridPoint(int x, int y) implements PointUtils<GridPoint, Direction2D> {
 
@@ -13,24 +14,57 @@ public record GridPoint(int x, int y) implements PointUtils<GridPoint, Direction
   @Override
   public List<GridPoint> getCardinalNeighbors() {
     return Arrays.asList(
-        new GridPoint(this.x + Direction2D.UP.getDx(), this.y + Direction2D.UP.getDy()),
-        new GridPoint(this.x + Direction2D.DOWN.getDx(), this.y + Direction2D.DOWN.getDy()),
-        new GridPoint(this.x + Direction2D.LEFT.getDx(), this.y + Direction2D.LEFT.getDy()),
-        new GridPoint(this.x + Direction2D.RIGHT.getDx(), this.y + Direction2D.RIGHT.getDy())
+        getNeighborGivenDirection(Direction2D.UP),
+        getNeighborGivenDirection(Direction2D.DOWN),
+        getNeighborGivenDirection(Direction2D.LEFT),
+        getNeighborGivenDirection(Direction2D.RIGHT)
     );
   }
+
 
   @Override
   public List<GridPoint> getAllNeighbors() {
     return Arrays.asList(
-        new GridPoint(this.x + Direction2D.UP.getDx(), this.y + Direction2D.UP.getDy()),
-        new GridPoint(this.x + Direction2D.DOWN.getDx(), this.y + Direction2D.DOWN.getDy()),
-        new GridPoint(this.x + Direction2D.LEFT.getDx(), this.y + Direction2D.LEFT.getDy()),
-        new GridPoint(this.x + Direction2D.RIGHT.getDx(), this.y + Direction2D.RIGHT.getDy()),
-        new GridPoint(this.x + Direction2D.UP_LEFT.getDx(), this.y + Direction2D.UP_LEFT.getDy()),
-        new GridPoint(this.x + Direction2D.UP_RIGHT.getDx(), this.y + Direction2D.UP_RIGHT.getDy()),
-        new GridPoint(this.x + Direction2D.DOWN_LEFT.getDx(), this.y + Direction2D.DOWN_LEFT.getDy()),
-        new GridPoint(this.x + Direction2D.DOWN_RIGHT.getDx(), this.y + Direction2D.DOWN_RIGHT.getDy())
+        getNeighborGivenDirection(Direction2D.UP),
+        getNeighborGivenDirection(Direction2D.DOWN),
+        getNeighborGivenDirection(Direction2D.LEFT),
+        getNeighborGivenDirection(Direction2D.RIGHT),
+        getNeighborGivenDirection(Direction2D.UP_LEFT),
+        getNeighborGivenDirection(Direction2D.UP_RIGHT),
+        getNeighborGivenDirection(Direction2D.DOWN_LEFT),
+        getNeighborGivenDirection(Direction2D.DOWN_RIGHT)
+    );
+  }
+
+
+  public Map<Direction2D, GridPoint> getAllNeighborsWithDirection() {
+    return Map.of(
+        Direction2D.UP, getNeighborGivenDirection(Direction2D.UP),
+        Direction2D.DOWN, getNeighborGivenDirection(Direction2D.DOWN),
+        Direction2D.LEFT, getNeighborGivenDirection(Direction2D.LEFT),
+        Direction2D.RIGHT, getNeighborGivenDirection(Direction2D.RIGHT),
+        Direction2D.UP_LEFT, getNeighborGivenDirection(Direction2D.UP_LEFT),
+        Direction2D.UP_RIGHT, getNeighborGivenDirection(Direction2D.UP_RIGHT),
+        Direction2D.DOWN_LEFT, getNeighborGivenDirection(Direction2D.DOWN_LEFT),
+        Direction2D.DOWN_RIGHT, getNeighborGivenDirection(Direction2D.DOWN_RIGHT)
+    );
+  }
+
+  public Map<Direction2D, GridPoint> getDiagonalNeighborsWithDirection() {
+    return Map.of(
+        Direction2D.UP_LEFT, getNeighborGivenDirection(Direction2D.UP_LEFT),
+        Direction2D.UP_RIGHT, getNeighborGivenDirection(Direction2D.UP_RIGHT),
+        Direction2D.DOWN_LEFT, getNeighborGivenDirection(Direction2D.DOWN_LEFT),
+        Direction2D.DOWN_RIGHT, getNeighborGivenDirection(Direction2D.DOWN_RIGHT)
+    );
+  }
+
+  public Map<Direction2D, GridPoint> getCardinalNeighborsWithDirection() {
+    return Map.of(
+        Direction2D.UP, getNeighborGivenDirection(Direction2D.UP),
+        Direction2D.DOWN, getNeighborGivenDirection(Direction2D.DOWN),
+        Direction2D.LEFT, getNeighborGivenDirection(Direction2D.LEFT),
+        Direction2D.RIGHT, getNeighborGivenDirection(Direction2D.RIGHT)
     );
   }
 
