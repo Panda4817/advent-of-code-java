@@ -89,6 +89,11 @@ public record GridPoint(int x, int y) implements PointUtils<GridPoint, Direction
     return neighbor.isInBounds(minX, maxX, minY, maxY, minZ, maxZ);
   }
 
+  public boolean canMoveGivenDirection(Direction2D direction, int maxX, int maxY) {
+    GridPoint neighbor = moveByGivenDirection(direction);
+    return neighbor.isInBounds(0, maxX, 0, maxY, 0, 0);
+  }
+
   @Override
   public int manhattanDistance(GridPoint point2) {
     return Math.abs(this.x - point2.x) + Math.abs(this.y - point2.y);
