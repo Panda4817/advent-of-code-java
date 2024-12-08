@@ -78,6 +78,10 @@ public record GridPoint(int x, int y) implements PointUtils<GridPoint, Direction
     return this.x >= minX && this.x <= maxX && this.y >= minY && this.y <= maxY;
   }
 
+  public boolean isInBounds(int maxX, int maxY) {
+    return isInBounds(0, maxX, 0, maxY, 0, 0);
+  }
+
   @Override
   public boolean isEdge(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
     return this.x == minX || this.x == maxX || this.y == minY || this.y == maxY;
@@ -113,5 +117,14 @@ public record GridPoint(int x, int y) implements PointUtils<GridPoint, Direction
   public GridPoint scale(double scaleFactor) {
     return new GridPoint((int) (this.x * scaleFactor), (int) (this.y * scaleFactor));
   }
+
+  public int differenceX(GridPoint point2) {
+    return Math.abs(this.x - point2.x);
+  }
+
+  public int differenceY(GridPoint point2) {
+    return Math.abs(this.y - point2.y);
+  }
+
 }
 

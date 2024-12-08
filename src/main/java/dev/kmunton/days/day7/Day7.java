@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -28,7 +29,7 @@ public class Day7 implements Day<Long, Long> {
   @Override
   public Long part1() {
     return equations.stream()
-                    .filter(e -> e.isTrueWithAddOrMultiply(0L, 0))
+                    .filter(e -> e.isTrueWithAddOrMultiplyOrConcatenate(0L, 0, List.of(e::add, e::multiply)))
                     .map(e -> e.value)
                     .reduce(0L, Long::sum);
   }
@@ -36,45 +37,41 @@ public class Day7 implements Day<Long, Long> {
   @Override
   public Long part2() {
     return equations.stream()
-                    .filter(e -> e.isTrueWithAddOrMultiplyOrConcatenation(0L, 0))
+                    .filter(e -> e.isTrueWithAddOrMultiplyOrConcatenate(0L, 0, List.of(e::add, e::multiply, e::concatenate)))
                     .map(e -> e.value)
                     .reduce(0L, Long::sum);
   }
 
   record Equation(Long value, List<Long> numbers) {
 
-    public boolean isTrueWithAddOrMultiply(Long total, int index) {
-
+    public boolean isTrueWithAddOrMultiplyOrConcatenate(Long total, int index, List<BiFunction<Long, Long, Long>> functions) {
       if (Objects.equals(total, value()) && index >= numbers.size()) {
         return true;
       }
-      if (index >= numbers().size()) {
+      if (index >= numbers().size() || (total >= value() && index < numbers().size() - 1)) {
         return false;
       }
       Long number = numbers().get(index);
-      return isTrueWithAddOrMultiply(total + number, index + 1)
-          || isTrueWithAddOrMultiply((total == 0 ? 1 : total) * number, index + 1);
+      return functions.stream()
+                      .anyMatch(f -> isTrueWithAddOrMultiplyOrConcatenate(f.apply(total, number), index + 1, functions));
     }
 
-    public boolean isTrueWithAddOrMultiplyOrConcatenation(Long total, int index) {
-
-      if (Objects.equals(total, value()) && index >= numbers.size()) {
-        return true;
-      }
-      if (index >= numbers().size()) {
-        return false;
-      }
-      Long number = numbers().get(index);
-      return isTrueWithAddOrMultiplyOrConcatenation(total + number, index + 1)
-          || isTrueWithAddOrMultiplyOrConcatenation((total == 0 ? 1 : total) * number, index + 1)
-          || isTrueWithAddOrMultiplyOrConcatenation(getConcatenatedNumber(total, number), index + 1);
-    }
-
-    private Long getConcatenatedNumber(Long a, Long b) {
+    private Long concatenate(Long a, Long b) {
       if (a == 0) {
         return b;
       }
       return Long.parseLong(a + String.valueOf(b));
+    }
+
+    private Long add(Long a, Long b) {
+      return a + b;
+    }
+
+    private Long multiply(Long a, Long b) {
+      if (a == 0) {
+        return b;
+      }
+      return a * b;
     }
 
   }
