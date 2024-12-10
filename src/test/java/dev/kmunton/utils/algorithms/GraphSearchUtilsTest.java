@@ -1,12 +1,19 @@
 package dev.kmunton.utils.algorithms;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static dev.kmunton.utils.algorithms.GraphSearchUtils.findAllPathsWithBfs;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import org.junit.jupiter.api.Test;
-
-import java.util.*;
 
 class GraphSearchUtilsTest {
 
@@ -54,7 +61,7 @@ class GraphSearchUtilsTest {
   }
 
   @Test
-  void bfs_graphWithPath_returnsShortestPathInSteps() {
+  void shortestPathWithBfs_graphWithPath_returnsShortestPathInSteps() {
     // Graph:
     // A -- B
     // |    |
@@ -67,7 +74,31 @@ class GraphSearchUtilsTest {
 
     Function<String, List<String>> getNeighbors = graph::get;
 
-    List<String> path = GraphSearchUtils.bfs(
+    List<String> path = GraphSearchUtils.shortestPathWithBfs(
+        "A",
+        "D"::equals,
+        getNeighbors
+    );
+
+    assertEquals(List.of("A", "B", "D"), path);
+  }
+
+  @Test
+  void shortestPathWithBfs_graphSeveralPathsToGoal_returnsShortestPathInSteps() {
+    // Graph:
+    // A -- B -- C -- D -- E
+    // |    |
+    // C -- D
+    Map<String, List<String>> graph = new HashMap<>();
+    graph.put("A", List.of("B", "C"));
+    graph.put("B", List.of("D", "C"));
+    graph.put("C", List.of("D"));
+    graph.put("D", List.of("E"));
+    graph.put("E", List.of());
+
+    Function<String, List<String>> getNeighbors = graph::get;
+
+    List<String> path = GraphSearchUtils.shortestPathWithBfs(
         "A",
         "D"::equals,
         getNeighbors
@@ -135,7 +166,7 @@ class GraphSearchUtilsTest {
   }
 
   @Test
-  void bfs_graphWithoutPath_returnsEmptyList() {
+  void shortestPathWithBfs_graphWithoutPath_returnsEmptyList() {
     // Graph:
     // A -- B
     // C (isolated node)
@@ -146,7 +177,7 @@ class GraphSearchUtilsTest {
 
     Function<String, List<String>> getNeighbors = graph::get;
 
-    List<String> path = GraphSearchUtils.bfs("A", "C"::equals, getNeighbors);
+    List<String> path = GraphSearchUtils.shortestPathWithBfs("A", "C"::equals, getNeighbors);
 
     assertTrue(path.isEmpty());
   }
@@ -329,7 +360,7 @@ class GraphSearchUtilsTest {
   }
 
   @Test
-  void bfs_disconnectedGraph_returnsEmptyList() {
+  void shortestPathWithBfs_disconnectedGraph_returnsEmptyList() {
     // Graph:
     // A -- B
     // C -- D
@@ -341,7 +372,7 @@ class GraphSearchUtilsTest {
 
     Function<String, List<String>> getNeighbors = graph::get;
 
-    List<String> path = GraphSearchUtils.bfs("A", "D"::equals, getNeighbors);
+    List<String> path = GraphSearchUtils.shortestPathWithBfs("A", "D"::equals, getNeighbors);
 
     assertTrue(path.isEmpty());
   }
@@ -406,6 +437,129 @@ class GraphSearchUtilsTest {
 
     // Longest path from A to E should be A -> B -> C -> D -> E
     assertEquals(List.of("A", "B", "C", "D", "E"), longestPath);
+  }
+
+  @Test
+  void findAllPathsWithBfs_givenSingleNodeGraphIsGoal_thenShouldReturnSinglePath() {
+    Integer start = 1;
+    Predicate<Integer> isGoal = node -> node.equals(1);
+    Function<Integer, List<Integer>> getNeighbors = node -> Collections.emptyList();
+
+    List<List<Integer>> paths = findAllPathsWithBfs(start, isGoal, getNeighbors, true);
+
+    assertEquals(1, paths.size(), "There should be exactly one path");
+    assertEquals(Collections.singletonList(1), paths.get(0), "The path should be just the single node");
+  }
+
+  @Test
+  void findAllPathsWithBfs_givenLinearGraphWithGoalAtEndAndCheckVisitedFalse_thenShouldFindSinglePath() {
+    // Graph: 1 -> 2 -> 3 -> 4 (goal is node 4)
+    Map<Integer, List<Integer>> graph = new HashMap<>();
+    graph.put(1, List.of(2));
+    graph.put(2, List.of(3));
+    graph.put(3, List.of(4));
+    graph.put(4, Collections.emptyList());
+
+    Integer start = 1;
+    Predicate<Integer> isGoal = node -> node.equals(4);
+    Function<Integer, List<Integer>> getNeighbors = graph::get;
+
+    List<List<Integer>> paths = findAllPathsWithBfs(start, isGoal, getNeighbors, false);
+
+    assertEquals(1, paths.size(), "Only one path should exist from 1 to 4 in a linear graph");
+    assertEquals(Arrays.asList(1, 2, 3, 4), paths.get(0));
+  }
+
+  @Test
+  void findAllPathsWithBfs_givenBranchingGraphWithTwoPathsAndCheckVisitedFalse_thenShouldReturnTwoDistinctPaths() {
+    // Graph:
+    //    1
+    //   / \
+    //  2   3
+    //   \ /
+    //    4 (goal)
+    Map<Integer, List<Integer>> graph = new HashMap<>();
+    graph.put(1, Arrays.asList(2, 3));
+    graph.put(2, List.of(4));
+    graph.put(3, List.of(4));
+    graph.put(4, Collections.emptyList());
+
+    Integer start = 1;
+    Predicate<Integer> isGoal = node -> node.equals(4);
+    Function<Integer, List<Integer>> getNeighbors = graph::get;
+
+    List<List<Integer>> paths = findAllPathsWithBfs(start, isGoal, getNeighbors, false);
+
+    assertEquals(2, paths.size(), "There should be two distinct paths from 1 to 4");
+    List<Integer> pathA = Arrays.asList(1, 2, 4);
+    List<Integer> pathB = Arrays.asList(1, 3, 4);
+    assertTrue(paths.contains(pathA), "Paths should contain path via node 2");
+    assertTrue(paths.contains(pathB), "Paths should contain path via node 3");
+  }
+
+  @Test
+  void findAllPathsWithBfs_givenBranchingGraphWithTwoPathsAndCheckVisitedTrue_thenShouldReturnOnePath() {
+    // Graph:
+    //    1
+    //   / \
+    //  2   3
+    //   \ /
+    //    4 (goal)
+    Map<Integer, List<Integer>> graph = new HashMap<>();
+    graph.put(1, Arrays.asList(2, 3));
+    graph.put(2, List.of(4));
+    graph.put(3, List.of(4));
+    graph.put(4, Collections.emptyList());
+
+    Integer start = 1;
+    Predicate<Integer> isGoal = node -> node.equals(4);
+    Function<Integer, List<Integer>> getNeighbors = graph::get;
+
+    List<List<Integer>> paths = findAllPathsWithBfs(start, isGoal, getNeighbors, true);
+
+    assertEquals(1, paths.size(), "There should be one path from 1 to 4");
+  }
+
+  @Test
+  void findAllPathsWithBfs_givenGraphWithCyclesAndCheckVisitedFalse_thenShouldFindAllPossiblePaths() {
+    // Graph:
+    // 1 -> 2 -> 3 -> 4 (goal)
+    //      \
+    //       5 -> 4 (goal)
+
+    Predicate<Integer> isGoal = node -> node.equals(4);
+    Map<Integer, List<Integer>> acyclicGraph = new HashMap<>();
+    acyclicGraph.put(1, List.of(2));
+    acyclicGraph.put(2, Arrays.asList(3, 5));
+    acyclicGraph.put(3, List.of(4));
+    acyclicGraph.put(4, Collections.emptyList());
+    acyclicGraph.put(5, List.of(4));
+
+    List<List<Integer>> acyclicPaths = findAllPathsWithBfs(1, isGoal, acyclicGraph::get, false);
+
+    assertEquals(2, acyclicPaths.size(), "There should be two distinct paths to node 4 without visited checks");
+    List<Integer> pathA = Arrays.asList(1, 2, 3, 4);
+    List<Integer> pathB = Arrays.asList(1, 2, 5, 4);
+    assertTrue(acyclicPaths.contains(pathA), "Paths should contain [1,2,3,4]");
+    assertTrue(acyclicPaths.contains(pathB), "Paths should contain [1,2,5,4]");
+  }
+
+  @Test
+  void findAllPathsWithBfs_givenGraphWithNoGoal_thenShouldReturnEmptyList() {
+    // Graph: 1 -> 2 -> 3
+    // Goal node does not exist (say goal is node 4)
+    Map<Integer, List<Integer>> graph = new HashMap<>();
+    graph.put(1, List.of(2));
+    graph.put(2, List.of(3));
+    graph.put(3, Collections.emptyList());
+
+    Integer start = 1;
+    Predicate<Integer> isGoal = node -> node.equals(4);
+    Function<Integer, List<Integer>> getNeighbors = graph::get;
+
+    List<List<Integer>> paths = findAllPathsWithBfs(start, isGoal, getNeighbors, true);
+
+    assertTrue(paths.isEmpty(), "No paths should be found if the goal is unreachable");
   }
 }
 

@@ -135,7 +135,7 @@ public class GraphSearchUtils {
    * @param <T>          The type of the nodes.
    * @return A list representing the shortest path from start to the goal node, or an empty list if no path is found.
    */
-  public static <T> List<T> bfs(
+  public static <T> List<T> shortestPathWithBfs(
       T start,
       Predicate<T> isGoal,
       Function<T, List<T>> getNeighbors
@@ -164,6 +164,80 @@ public class GraphSearchUtils {
     }
 
     return List.of(); // No path found
+  }
+
+  /**
+   * Finds all paths from a starting node to any node that satisfies a given goal condition,
+   * using a Breadth-First Search (BFS) approach.
+   *
+   * <p>This method explores paths in a graph-like structure defined implicitly by a
+   * "getNeighbors" function. Starting from the given start node, it generates paths
+   * by iteratively expanding the frontier of search, enqueuing each successive node
+   * appended to the paths discovered. When a path reaches a goal node (as determined
+   * by the {@code isGoal} predicate), that path is recorded in the results.
+   *
+   * <p>Optionally, the search can track visited nodes. When {@code checkVisited} is
+   * {@code true}, once a node is encountered, it will not be revisited as part of any
+   * other path. This can prevent infinite loops in the presence of cycles, but may
+   * also prevent finding multiple distinct paths to the same goal node. When
+   * {@code checkVisited} is {@code false}, all possible paths will be discovered (barring
+   * infinite expansions due to cycles).
+   *
+   * @param <T>          the type of nodes
+   * @param start        the starting node of the search
+   * @param isGoal       a predicate that returns {@code true} if the given node is a goal node
+   * @param getNeighbors a function that, given a node, returns its neighboring nodes
+   * @param checkVisited if {@code true}, the search will never revisit already visited nodes;
+   *                     if {@code false}, nodes can appear in multiple paths
+   * @return a list of all paths found from the start node to any goal node, where each path
+   *         is represented as a list of nodes in the order they are visited
+   * @throws NullPointerException if any of the parameters {@code start}, {@code isGoal}, or
+   *                              {@code getNeighbors} are {@code null}
+   */
+  public static <T> List<List<T>> findAllPathsWithBfs(
+      T start,
+      Predicate<T> isGoal,
+      Function<T, List<T>> getNeighbors,
+      boolean checkVisited
+  ) {
+    Queue<List<T>> queue = new LinkedList<>();
+    queue.add(Collections.singletonList(start));
+
+    Set<T> visited = new HashSet<>();
+    if (checkVisited) {
+      visited.add(start);
+    }
+
+    List<List<T>> paths = new ArrayList<>();
+
+    while (!queue.isEmpty()) {
+      List<T> path = queue.poll();
+      T current = path.getLast();
+
+      if (isGoal.test(current)) {
+        paths.add(path);
+        continue;
+      }
+
+      for (T neighbor : getNeighbors.apply(current)) {
+        if (checkVisited) {
+          if (!visited.contains(neighbor)) {
+            visited.add(neighbor);
+            List<T> newPath = new ArrayList<>(path);
+            newPath.add(neighbor);
+            queue.add(newPath);
+          }
+          continue;
+        }
+
+        List<T> newPath = new ArrayList<>(path);
+        newPath.add(neighbor);
+        queue.add(newPath);
+
+      }
+    }
+
+    return paths;
   }
 
   /**
