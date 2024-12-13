@@ -37,7 +37,7 @@ class GraphSearchUtilsTest {
       default -> Integer.MAX_VALUE;
     };
 
-    List<String> path = GraphSearchUtils.aStarSearch("A", "D", getNeighbors, heuristic);
+    List<String> path = GraphSearchUtils.aStarSearch("A", "D"::equals, getNeighbors, heuristic);
 
     assertEquals(List.of("A", "B", "C", "D"), path);
   }
@@ -143,7 +143,7 @@ class GraphSearchUtilsTest {
     Function<String, Map<String, Integer>> getNeighbors = graph::get;
     ToIntFunction<String> heuristic = node -> 1;
 
-    List<String> path = GraphSearchUtils.aStarSearch("A", "C", getNeighbors, heuristic);
+    List<String> path = GraphSearchUtils.aStarSearch("A", "C"::equals, getNeighbors, heuristic);
 
     assertTrue(path.isEmpty());
   }
@@ -353,7 +353,7 @@ class GraphSearchUtilsTest {
     Function<String, Map<String, Integer>> getNeighbors = graph::get;
     ToIntFunction<String> heuristic = node -> 10; // Overestimating heuristic
 
-    List<String> path = GraphSearchUtils.aStarSearch("A", "D", getNeighbors, heuristic);
+    List<String> path = GraphSearchUtils.aStarSearch("A", "D"::equals, getNeighbors, heuristic);
 
     // A* with an overestimating heuristic becomes unreliable; we check that it still finds a path
     assertFalse(path.isEmpty());

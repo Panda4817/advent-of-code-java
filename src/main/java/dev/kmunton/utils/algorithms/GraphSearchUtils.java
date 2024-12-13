@@ -35,7 +35,7 @@ public class GraphSearchUtils {
    */
   public static <T> List<T> aStarSearch(
       T start,
-      T goal,
+      Predicate<T> isGoal,
       Function<T, Map<T, Integer>> getNeighbors,
       ToIntFunction<T> heuristic
   ) {
@@ -52,8 +52,8 @@ public class GraphSearchUtils {
       Node<T> current = openSet.poll();
       openSetTracker.remove(current.value);
 
-      if (current.value.equals(goal)) {
-        return reconstructPath(cameFrom, goal);
+      if (isGoal.test(current.value)) {
+        return reconstructPath(cameFrom, current.value);
       }
 
       for (Map.Entry<T, Integer> neighborEntry : getNeighbors.apply(current.value).entrySet()) {
