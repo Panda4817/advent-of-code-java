@@ -5,10 +5,10 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class GridUtils implements ShapeUtils<Map<GridPoint, String>, Direction2D> {
+public class GridUtils<T> implements ShapeUtils<Map<GridPoint, T>, Direction2D> {
 
   @Override
-  public Map<GridPoint, String> rotateGivenDirection(Map<GridPoint, String> grid, int degrees, Direction2D direction) {
+  public Map<GridPoint, T> rotateGivenDirection(Map<GridPoint, T> grid, int degrees, Direction2D direction) {
     if (degrees % 90 != 0) {
       throw new IllegalArgumentException("Rotation degrees must be a multiple of 90.");
     }
@@ -28,7 +28,7 @@ public class GridUtils implements ShapeUtils<Map<GridPoint, String>, Direction2D
   }
 
   @Override
-  public int maxX(Map<GridPoint, String> shape) {
+  public int maxX(Map<GridPoint, T> shape) {
     return shape.keySet().stream()
                 .mapToInt(GridPoint::x)
                 .max()
@@ -36,7 +36,7 @@ public class GridUtils implements ShapeUtils<Map<GridPoint, String>, Direction2D
   }
 
   @Override
-  public int maxY(Map<GridPoint, String> shape) {
+  public int maxY(Map<GridPoint, T> shape) {
     return shape.keySet().stream()
                 .mapToInt(GridPoint::y)
                 .max()
@@ -44,13 +44,13 @@ public class GridUtils implements ShapeUtils<Map<GridPoint, String>, Direction2D
   }
 
   @Override
-  public int maxZ(Map<GridPoint, String> shape) {
+  public int maxZ(Map<GridPoint, T> shape) {
     // Since GridPoint is 2D, we return 0 or throw an exception if appropriate
     return 0;
   }
 
   @Override
-  public int minX(Map<GridPoint, String> shape) {
+  public int minX(Map<GridPoint, T> shape) {
     return shape.keySet().stream()
                 .mapToInt(GridPoint::x)
                 .min()
@@ -58,7 +58,7 @@ public class GridUtils implements ShapeUtils<Map<GridPoint, String>, Direction2D
   }
 
   @Override
-  public int minY(Map<GridPoint, String> shape) {
+  public int minY(Map<GridPoint, T> shape) {
     return shape.keySet().stream()
                 .mapToInt(GridPoint::y)
                 .min()
@@ -66,16 +66,16 @@ public class GridUtils implements ShapeUtils<Map<GridPoint, String>, Direction2D
   }
 
   @Override
-  public int minZ(Map<GridPoint, String> shape) {
+  public int minZ(Map<GridPoint, T> shape) {
     // Since GridPoint is 2D, we return 0 or throw an exception if appropriate
     return 0;
   }
 
 
-  private Map<GridPoint, String> rotate90(Map<GridPoint, String> grid) {
-    Map<GridPoint, String> rotated = new HashMap<>();
+  private Map<GridPoint, T> rotate90(Map<GridPoint, T> grid) {
+    Map<GridPoint, T> rotated = new HashMap<>();
     int maxX = maxX(grid);
-    for (Map.Entry<GridPoint, String> entry : grid.entrySet()) {
+    for (Map.Entry<GridPoint, T> entry : grid.entrySet()) {
       GridPoint original = entry.getKey();
       GridPoint rotatedPoint = new GridPoint(original.y(), maxX - original.x());
       rotated.put(rotatedPoint, entry.getValue());

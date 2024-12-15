@@ -8,11 +8,11 @@ import java.util.*;
 
 class GridUtilsTest {
 
-  private GridUtils gridUtils;
+  private GridUtils<String> gridUtils;
 
   @BeforeEach
   void setUp() {
-    gridUtils = new GridUtils();
+    gridUtils = new GridUtils<>();
   }
 
   @Test
