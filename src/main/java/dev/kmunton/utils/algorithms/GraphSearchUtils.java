@@ -26,11 +26,11 @@ public class GraphSearchUtils {
   /**
    * Performs the A* search algorithm to find the shortest path from the start node to the goal node.
    *
-   * @param start       The starting node.
-   * @param goal        The goal node.
+   * @param start        The starting node.
+   * @param goal         The goal node.
    * @param getNeighbors Function to get neighbors and their edge weights for a given node.
-   * @param heuristic   Function to estimate the cost from a node to the goal.
-   * @param <T>         The type of the nodes.
+   * @param heuristic    Function to estimate the cost from a node to the goal.
+   * @param <T>          The type of the nodes.
    * @return A list representing the shortest path from start to goal, or an empty list if no path is found.
    */
   public static <T> List<T> aStarSearch(
@@ -126,8 +126,115 @@ public class GraphSearchUtils {
     return Collections.emptyList(); // No path found
   }
 
+  public static <T> List<List<T>> dijkstraSearchAllPathsGivenKnownMaxCost(
+      T start,
+      Predicate<T> isGoal,
+      Function<T, Map<T, Integer>> getNeighbors,
+      int maxAllowedCost
+  ) {
+    PriorityQueue<Node<T>> queue = new PriorityQueue<>();
+    Map<T, Integer> gCosts = new HashMap<>();
+    Map<T, List<T>> parents = new HashMap<>();
+    Set<T> queueTracker = new HashSet<>();
+
+    gCosts.put(start, 0);
+    parents.put(start, Collections.emptyList()); // start has no parents
+    queue.add(new Node<>(start, 0, 0));
+    queueTracker.add(start);
+
+    // We'll store the nodes that qualify as goals with cost <= maxAllowedCost
+    List<T> qualifyingGoals = new ArrayList<>();
+
+    while (!queue.isEmpty()) {
+      Node<T> current = queue.poll();
+      queueTracker.remove(current.value);
+
+      int currentCost = gCosts.get(current.value);
+      if (isGoal.test(current.value) && currentCost <= maxAllowedCost) {
+        // Record this goal for path reconstruction later
+        qualifyingGoals.add(current.value);
+        // Don't return here, because we might find other equally-short paths.
+        // Continue to process other nodes to ensure all paths are found.
+      }
+
+      // Explore neighbors
+      for (Map.Entry<T, Integer> neighborEntry : getNeighbors.apply(current.value).entrySet()) {
+        T neighbor = neighborEntry.getKey();
+        int edgeCost = neighborEntry.getValue();
+        int tentativeGCost = currentCost + edgeCost;
+
+        // If the tentative cost exceeds maxAllowedCost, no need to proceed
+        if (tentativeGCost > maxAllowedCost) {
+          continue;
+        }
+
+        int knownCost = gCosts.getOrDefault(neighbor, Integer.MAX_VALUE);
+
+        if (tentativeGCost < knownCost) {
+          // Found a strictly better path to 'neighbor'
+          gCosts.put(neighbor, tentativeGCost);
+          parents.put(neighbor, new ArrayList<>(List.of(current.value)));
+
+          if (!queueTracker.contains(neighbor)) {
+            queue.add(new Node<>(neighbor, tentativeGCost, 0));
+            queueTracker.add(neighbor);
+          }
+        } else if (tentativeGCost == knownCost) {
+          // Found another equally good path to 'neighbor'
+          // Add current node to the parents list without removing existing ones
+          parents.get(neighbor).add(current.value);
+        }
+      }
+    }
+
+    // Now we have:
+    // - gCosts: the best known costs for all reachable nodes
+    // - parents: lists of parents for each node on the shortest paths
+    // - qualifyingGoals: all goal nodes reached with cost <= maxAllowedCost
+
+    // Reconstruct all shortest paths for each qualifying goal
+    List<List<T>> allPaths = new ArrayList<>();
+    for (T goal : qualifyingGoals) {
+      allPaths.addAll(reconstructAllPaths(parents, start, goal));
+    }
+
+    return allPaths;
+  }
+
   /**
-   * Performs Breadth-First Search (BFS) to find the shortest path (in terms of number of steps) from the start node to a node satisfying the goal predicate.
+   * Reconstructs all shortest paths from start to goal using the parents map.
+   */
+  private static <T> List<List<T>> reconstructAllPaths(Map<T, List<T>> parents, T start, T goal) {
+    List<List<T>> result = new ArrayList<>();
+    LinkedList<T> path = new LinkedList<>();
+    backtrackAllPaths(parents, start, goal, path, result);
+    return result;
+  }
+
+  private static <T> void backtrackAllPaths(Map<T, List<T>> parents, T start, T current,
+      LinkedList<T> path, List<List<T>> result) {
+    path.addFirst(current);
+
+    if (current.equals(start)) {
+      // Reached the start, record a copy of the current path
+      result.add(new ArrayList<>(path));
+    } else {
+      // Recurse for all parents of the current node
+      List<T> preds = parents.get(current);
+      if (preds != null) {
+        for (T pred : preds) {
+          backtrackAllPaths(parents, start, pred, path, result);
+        }
+      }
+    }
+
+    path.removeFirst();
+  }
+
+
+  /**
+   * Performs Breadth-First Search (BFS) to find the shortest path (in terms of number of steps) from the start node to a node satisfying the goal
+   * predicate.
    *
    * @param start        The starting node.
    * @param isGoal       Predicate to test if a node is the goal.
@@ -167,32 +274,26 @@ public class GraphSearchUtils {
   }
 
   /**
-   * Finds all paths from a starting node to any node that satisfies a given goal condition,
-   * using a Breadth-First Search (BFS) approach.
+   * Finds all paths from a starting node to any node that satisfies a given goal condition, using a Breadth-First Search (BFS) approach.
    *
    * <p>This method explores paths in a graph-like structure defined implicitly by a
-   * "getNeighbors" function. Starting from the given start node, it generates paths
-   * by iteratively expanding the frontier of search, enqueuing each successive node
-   * appended to the paths discovered. When a path reaches a goal node (as determined
-   * by the {@code isGoal} predicate), that path is recorded in the results.
+   * "getNeighbors" function. Starting from the given start node, it generates paths by iteratively expanding the frontier of search, enqueuing each
+   * successive node appended to the paths discovered. When a path reaches a goal node (as determined by the {@code isGoal} predicate), that path is
+   * recorded in the results.
    *
    * <p>Optionally, the search can track visited nodes. When {@code checkVisited} is
-   * {@code true}, once a node is encountered, it will not be revisited as part of any
-   * other path. This can prevent infinite loops in the presence of cycles, but may
-   * also prevent finding multiple distinct paths to the same goal node. When
-   * {@code checkVisited} is {@code false}, all possible paths will be discovered (barring
-   * infinite expansions due to cycles).
+   * {@code true}, once a node is encountered, it will not be revisited as part of any other path. This can prevent infinite loops in the presence of
+   * cycles, but may also prevent finding multiple distinct paths to the same goal node. When {@code checkVisited} is {@code false}, all possible
+   * paths will be discovered (barring infinite expansions due to cycles).
    *
    * @param <T>          the type of nodes
    * @param start        the starting node of the search
    * @param isGoal       a predicate that returns {@code true} if the given node is a goal node
    * @param getNeighbors a function that, given a node, returns its neighboring nodes
-   * @param checkVisited if {@code true}, the search will never revisit already visited nodes;
-   *                     if {@code false}, nodes can appear in multiple paths
-   * @return a list of all paths found from the start node to any goal node, where each path
-   *         is represented as a list of nodes in the order they are visited
-   * @throws NullPointerException if any of the parameters {@code start}, {@code isGoal}, or
-   *                              {@code getNeighbors} are {@code null}
+   * @param checkVisited if {@code true}, the search will never revisit already visited nodes; if {@code false}, nodes can appear in multiple paths
+   * @return a list of all paths found from the start node to any goal node, where each path is represented as a list of nodes in the order they are
+   * visited
+   * @throws NullPointerException if any of the parameters {@code start}, {@code isGoal}, or {@code getNeighbors} are {@code null}
    */
   public static <T> List<List<T>> findAllPathsWithBfs(
       T start,
@@ -260,7 +361,9 @@ public class GraphSearchUtils {
 
     while (!stack.isEmpty()) {
       T current = stack.pop();
-      if (visited.contains(current)) continue;
+      if (visited.contains(current)) {
+        continue;
+      }
       visited.add(current);
 
       if (isGoal.test(current)) {
@@ -303,6 +406,7 @@ public class GraphSearchUtils {
    * @param <T> The type of the node value.
    */
   private static class Node<T> implements Comparable<Node<T>> {
+
     final T value;
     final int gCost; // Cost from start to this node
     final int fCost; // Estimated total cost (gCost + heuristic)
@@ -320,8 +424,12 @@ public class GraphSearchUtils {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof Node<?> node)) return false;
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Node<?> node)) {
+        return false;
+      }
       return value.equals(node.value);
     }
 
@@ -334,10 +442,10 @@ public class GraphSearchUtils {
   /**
    * Finds the longest path from the start node to the goal node in a directed acyclic graph (DAG).
    *
-   * @param start  The starting node.
-   * @param goal   The goal node.
-   * @param graph  The graph represented as a map of nodes to their neighbors and edge weights.
-   * @param <T>    The type of the nodes.
+   * @param start The starting node.
+   * @param goal  The goal node.
+   * @param graph The graph represented as a map of nodes to their neighbors and edge weights.
+   * @param <T>   The type of the nodes.
    * @return A list representing the longest path from start to goal, or an empty list if no path exists.
    */
   public static <T> List<T> findLongestPathDirected(
@@ -363,7 +471,9 @@ public class GraphSearchUtils {
 
     // Process nodes in topological order
     for (T node : topoOrder) {
-      if (distances.get(node) == Integer.MIN_VALUE) continue; // Skip unreachable nodes
+      if (distances.get(node) == Integer.MIN_VALUE) {
+        continue; // Skip unreachable nodes
+      }
 
       Map<T, Integer> neighbors = getNeighbors.apply(node);
       if (neighbors == null) {
@@ -417,15 +527,15 @@ public class GraphSearchUtils {
   /**
    * Helper method for DFS traversal to find the longest path in an undirected graph.
    *
-   * @param current      The current node.
-   * @param goal         The goal node.
-   * @param getNeighbors Function to get neighbors and their edge weights for a given node.
-   * @param visited      Set of visited nodes.
-   * @param currentPath  The current path being explored.
-   * @param longestPath  The longest path found so far.
+   * @param current       The current node.
+   * @param goal          The goal node.
+   * @param getNeighbors  Function to get neighbors and their edge weights for a given node.
+   * @param visited       Set of visited nodes.
+   * @param currentPath   The current path being explored.
+   * @param longestPath   The longest path found so far.
    * @param currentLength The length of the current path.
-   * @param maxLength    The maximum length found so far.
-   * @param <T>          The type of the nodes.
+   * @param maxLength     The maximum length found so far.
+   * @param <T>           The type of the nodes.
    */
   @SuppressWarnings("java:S107")
   private static <T> void findLongestPathDFS(
@@ -491,8 +601,8 @@ public class GraphSearchUtils {
 
     for (T node : graph.keySet()) {
       if (!visited.contains(node) && dfsTopologicalSort(node, graph, visited, new HashSet<>(), stack)) {
-          return List.of(); // Graph contains a cycle
-        }
+        return List.of(); // Graph contains a cycle
+      }
 
     }
 
@@ -531,8 +641,8 @@ public class GraphSearchUtils {
         return true; // Cycle detected
       }
       if (!visited.contains(neighbor) && dfsTopologicalSort(neighbor, graph, visited, recursionStack, stack)) {
-          return true; // Cycle detected
-        }
+        return true; // Cycle detected
+      }
 
     }
 

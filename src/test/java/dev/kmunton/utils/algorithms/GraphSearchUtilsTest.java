@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -560,6 +562,168 @@ class GraphSearchUtilsTest {
     List<List<Integer>> paths = findAllPathsWithBfs(start, isGoal, getNeighbors, true);
 
     assertTrue(paths.isEmpty(), "No paths should be found if the goal is unreachable");
+  }
+
+  /**
+   * dijkstraSearchAllPathsGivenKnownMaxCost_startIsGoal_returnsSinglePath
+   * <p>
+   * Context: The start node is also the goal node. Result: Should return a single path consisting only of the start node.
+   */
+  @Test
+  void dijkstraSearchAllPathsGivenKnownMaxCost_startIsGoal_returnsSinglePath() {
+    // Start node
+    String start = "A";
+
+    // isGoal: True if the node is "A"
+    Predicate<String> isGoal = node -> node.equals("A");
+
+    // getNeighbors: No neighbors since it's a single-node graph
+    Function<String, Map<String, Integer>> getNeighbors = node -> Collections.emptyMap();
+
+    int maxAllowedCost = 10;
+
+    List<List<String>> paths = GraphSearchUtils.dijkstraSearchAllPathsGivenKnownMaxCost(
+        start, isGoal, getNeighbors, maxAllowedCost
+    );
+
+    assertEquals(1, paths.size());
+    assertEquals(Collections.singletonList("A"), paths.get(0));
+  }
+
+  /**
+   * dijkstraSearchAllPathsGivenKnownMaxCost_simpleGraphMultiplePaths_returnsAllShortestPaths
+   * <p>
+   * Context: A small graph:
+   * <p>
+   * A --1-- B \      | \2    |2 \    | \   C \ / D
+   * <p>
+   * There are two shortest paths from A to D: 1) A -> B -> D with cost 3 2) A -> C -> D with cost 3
+   * <p>
+   * Result: Should return both shortest paths.
+   */
+  @Test
+  void dijkstraSearchAllPathsGivenKnownMaxCost_simpleGraphMultiplePaths_returnsAllShortestPaths() {
+    String start = "A";
+    Predicate<String> isGoal = node -> node.equals("D");
+
+    // Neighbors:
+    // A: B(1), C(2)
+    // B: D(2)
+    // C: D(1)
+    // D: none
+    Function<String, Map<String, Integer>> getNeighbors = node -> {
+      Map<String, Integer> neighbors = new HashMap<>();
+      switch (node) {
+        case "A":
+          neighbors.put("B", 1);
+          neighbors.put("C", 2);
+          break;
+        case "B":
+          neighbors.put("D", 2);
+          break;
+        case "C":
+          neighbors.put("D", 1);
+          break;
+        default:
+          break;
+      }
+      return neighbors;
+    };
+
+    int maxAllowedCost = 5;
+
+    List<List<String>> paths = GraphSearchUtils.dijkstraSearchAllPathsGivenKnownMaxCost(
+        start, isGoal, getNeighbors, maxAllowedCost
+    );
+
+    // The expected shortest paths are A->B->D and A->C->D
+    Set<List<String>> expected = new HashSet<>();
+    expected.add(Arrays.asList("A", "B", "D"));
+    expected.add(Arrays.asList("A", "C", "D"));
+
+    assertEquals(2, paths.size());
+
+    // Convert result to a set to ignore order of paths
+    Set<List<String>> resultSet = new HashSet<>(paths);
+    assertEquals(expected, resultSet);
+  }
+
+  /**
+   * dijkstraSearchAllPathsGivenKnownMaxCost_noGoalReachable_returnsEmptyList
+   * <p>
+   * Context: A small graph where the goal is not reachable. Graph: A --1--> B
+   * <p>
+   * Goal: "C" which doesn't exist or isn't connected.
+   * <p>
+   * Result: Should return an empty list since no path to goal can be found.
+   */
+  @Test
+  void dijkstraSearchAllPathsGivenKnownMaxCost_noGoalReachable_returnsEmptyList() {
+    String start = "A";
+    Predicate<String> isGoal = node -> node.equals("C"); // "C" is never reached
+    Function<String, Map<String, Integer>> getNeighbors = node -> {
+      if (node.equals("A")) {
+        return Collections.singletonMap("B", 1);
+      } else if (node.equals("B")) {
+        return Collections.emptyMap();
+      }
+      return Collections.emptyMap();
+    };
+
+    int maxAllowedCost = 10;
+
+    List<List<String>> paths = GraphSearchUtils.dijkstraSearchAllPathsGivenKnownMaxCost(
+        start, isGoal, getNeighbors, maxAllowedCost
+    );
+
+    assertTrue(paths.isEmpty(), "No paths should be found.");
+  }
+
+  /**
+   * dijkstraSearchAllPathsGivenKnownMaxCost_complexGraphWithCostLimit_returnsOnlyPathsUnderMaxCost
+   * <p>
+   * Context: A graph where: A -1-> B -1-> C -1-> D A -3-> E -1-> D
+   * <p>
+   * The shortest path A-B-C-D has a cost of 3. Another path A-E-D has a cost of 4. If maxAllowedCost = 3, only A-B-C-D should be returned.
+   */
+  @Test
+  void dijkstraSearchAllPathsGivenKnownMaxCost_complexGraphWithCostLimit_returnsOnlyPathsUnderMaxCost() {
+    String start = "A";
+    Predicate<String> isGoal = node -> node.equals("D");
+
+    Function<String, Map<String, Integer>> getNeighbors = node -> {
+      Map<String, Integer> neighbors = new HashMap<>();
+      switch (node) {
+        case "A":
+          neighbors.put("B", 1);
+          neighbors.put("E", 3);
+          break;
+        case "B":
+          neighbors.put("C", 1);
+          break;
+        case "C":
+          neighbors.put("D", 1);
+          break;
+        case "E":
+          neighbors.put("D", 1);
+          break;
+        default:
+          break;
+      }
+      return neighbors;
+    };
+
+    int maxAllowedCost = 3;
+
+    List<List<String>> paths = GraphSearchUtils.dijkstraSearchAllPathsGivenKnownMaxCost(
+        start, isGoal, getNeighbors, maxAllowedCost
+    );
+
+    // The only valid shortest path under cost 4 is A->B->C->D (cost 3)
+    List<List<String>> expected = Collections.singletonList(Arrays.asList("A", "B", "C", "D"));
+
+    assertEquals(1, paths.size());
+    assertEquals(expected, paths);
   }
 }
 
