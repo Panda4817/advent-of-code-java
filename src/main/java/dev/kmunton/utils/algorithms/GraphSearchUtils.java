@@ -76,6 +76,56 @@ public class GraphSearchUtils {
     return List.of(); // No path found
   }
 
+  public static <T, R> List<T> aStarSearchVisited(
+      T start,
+      Predicate<T> isGoal,
+      Function<T, Map<T, Integer>> getNeighbors,
+      ToIntFunction<T> heuristic,
+      Function<T, R> addToVisited
+  ) {
+    PriorityQueue<Node<T>> openSet = new PriorityQueue<>();
+    Map<T, Integer> gCosts = new HashMap<>();
+    Map<T, T> cameFrom = new HashMap<>();
+    Set<T> openSetTracker = new HashSet<>();
+    Set<R> visited = new HashSet<>();
+
+    openSet.add(new Node<>(start, 0, heuristic.applyAsInt(start)));
+    gCosts.put(start, 0);
+    openSetTracker.add(start);
+
+    while (!openSet.isEmpty()) {
+      Node<T> current = openSet.poll();
+      openSetTracker.remove(current.value);
+      visited.add(addToVisited.apply(current.value));
+
+      if (isGoal.test(current.value)) {
+        return reconstructPath(cameFrom, current.value);
+      }
+
+      for (Map.Entry<T, Integer> neighborEntry : getNeighbors.apply(current.value).entrySet()) {
+        T neighbor = neighborEntry.getKey();
+        if (visited.contains(addToVisited.apply(neighbor))) {
+          continue;
+        }
+
+        int tentativeGCost = gCosts.get(current.value) + neighborEntry.getValue();
+
+        if (tentativeGCost < gCosts.getOrDefault(neighbor, Integer.MAX_VALUE)) {
+          cameFrom.put(neighbor, current.value);
+          gCosts.put(neighbor, tentativeGCost);
+
+          int fCost = tentativeGCost + heuristic.applyAsInt(neighbor);
+          if (!openSetTracker.contains(neighbor)) {
+            openSet.add(new Node<>(neighbor, tentativeGCost, fCost));
+            openSetTracker.add(neighbor);
+          }
+        }
+      }
+    }
+
+    return List.of(); // No path found
+  }
+
   /**
    * Performs Dijkstra's algorithm to find the shortest path from the start node to the goal node.
    *
@@ -339,6 +389,34 @@ public class GraphSearchUtils {
     }
 
     return paths;
+  }
+
+  public static <T> Map<T, Integer> findAllStepsToEachPossibleNodeBfs(
+      T start,
+      Function<T, List<T>> getNeighbors
+  ) {
+    Queue<T> queue = new LinkedList<>();
+    queue.add(start);
+
+    Set<T> visited = new HashSet<>();
+    Map<T, Integer> map = new HashMap<>();
+    map.put(start, 0);
+    visited.add(start);
+
+    while (!queue.isEmpty()) {
+      T current = queue.poll();
+      int steps = map.get(current);
+
+      for (T neighbor : getNeighbors.apply(current)) {
+        if (!visited.contains(neighbor)) {
+          visited.add(neighbor);
+          map.put(neighbor, steps + 1);
+          queue.add(neighbor);
+        }
+      }
+    }
+
+    return map;
   }
 
   /**
