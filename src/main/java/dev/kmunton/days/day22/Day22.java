@@ -7,16 +7,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Day22 implements Day<Long, Long> {
 
   private final List<Long> numbers = new ArrayList<>();
-  private final Map<String, Long> cache = new HashMap<>();
 
 
   public Day22(List<String> input) {
@@ -60,16 +57,13 @@ public class Day22 implements Day<Long, Long> {
 
   @Override
   public Long part2() {
-    Map<Long, List<Price>> priceMap = new HashMap<>();
-    Set<List<Long>> distinctChanges = new HashSet<>();
+    Map<List<Long>, Long> sequenceToSum = new HashMap<>();
 
     for (long number : numbers) {
-      List<Price> seq = new ArrayList<>();
       long prevDigit = getOneDigit(number);
-      seq.add(new Price(prevDigit, 0, new ArrayList<>()));
       long secretNumber = number;
       List<Long> changes = new ArrayList<>();
-
+      Set<List<Long>> visited = new HashSet<>();
       for (int i = 0; i < 2000; i++) {
         secretNumber = nextSecretNumber(secretNumber);
         long currentDigit = getOneDigit(secretNumber);
@@ -80,47 +74,16 @@ public class Day22 implements Day<Long, Long> {
           changes.removeFirst();
         }
 
-        seq.add(new Price(currentDigit, change, new ArrayList<>(changes)));
+        if (changes.size() == 4 && !visited.contains(changes)) {
+          visited.add(new ArrayList<>(changes));
+          sequenceToSum.put(new ArrayList<>(changes), sequenceToSum.getOrDefault(new ArrayList<>(changes), 0L) + currentDigit);
+        }
+
         prevDigit = currentDigit;
       }
 
-      seq = seq.stream()
-               .filter(p -> p.fourConsecutiveChanges.size() == 4)
-               .toList();
-      priceMap.put(number, seq);
-
-      seq.forEach(p -> distinctChanges.add(new ArrayList<>(p.fourConsecutiveChanges)));
     }
-
-    Set<List<Long>> filtered = distinctChanges.stream()
-                                              .filter(change -> change.stream().mapToLong(i -> i).sum() > 0)
-                                              .collect(Collectors.toSet());
-    log.info("toCheck: {}", filtered.size());
-    long currentMax = 0;
-
-    for (List<Long> change : filtered) {
-      long maxPrice = 0;
-
-      for (Long number : numbers) {
-
-        maxPrice += cache.computeIfAbsent(number.toString() + change.toString(), k -> {
-          OptionalLong optionalPrice = priceMap.get(number).stream()
-                                               .filter(p -> p.fourConsecutiveChanges.equals(change))
-                                               .mapToLong(p -> p.amount)
-                                               .findFirst();
-          return optionalPrice.isPresent() ? optionalPrice.getAsLong() : 0L;
-        });
-      }
-
-      if (maxPrice > currentMax) {
-        currentMax = maxPrice;
-        // This prints out the current sequence of changes and the maximum total price at that sequence - found the answer to part 2 from this
-        log.info("{}: {}", change, currentMax);
-      }
-    }
-
-    return currentMax;
+    return sequenceToSum.values().stream().mapToLong(s -> s).max().getAsLong();
   }
-
 
 }
