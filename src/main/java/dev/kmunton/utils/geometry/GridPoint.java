@@ -3,6 +3,7 @@ package dev.kmunton.utils.geometry;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public record GridPoint(int x, int y) implements PointUtils<GridPoint, Direction2D> {
 
@@ -124,6 +125,20 @@ public record GridPoint(int x, int y) implements PointUtils<GridPoint, Direction
 
   public int differenceY(GridPoint point2) {
     return Math.abs(this.y - point2.y);
+  }
+
+  @SafeVarargs
+  public final boolean canMoveGivenDirectionAndBlockers(Direction2D dir, int maxX, int maxY, Set<GridPoint>... blockers) {
+    GridPoint neighbor = moveByGivenDirection(dir);
+    if (!neighbor.isInBounds(0, maxX, 0, maxY, 0, 0)) {
+      return false;
+    }
+    for (var blocker : blockers) {
+      if (blocker.contains(neighbor)) {
+        return false;
+      }
+    }
+    return true;
   }
 
 }
