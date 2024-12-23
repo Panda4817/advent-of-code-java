@@ -68,6 +68,7 @@ public class Day18 implements Day<Long, String> {
   }
 
   record Historian(GridPoint current, GridPoint end) {
+
     public Map<Historian, Integer> getNeighbors(Map<GridPoint, Integer> memory) {
       Map<Historian, Integer> neighbors = new HashMap<>();
       current.getCardinalNeighbors()
@@ -76,9 +77,11 @@ public class Day18 implements Day<Long, String> {
              .forEach(neighbor -> neighbors.put(new Historian(neighbor, end), 1));
       return neighbors;
     }
+
     public int getHeuristic() {
       return end.manhattanDistance(current) + 1;
     }
+
     public boolean isGoal() {
       return current.equals(end);
     }
@@ -103,7 +106,7 @@ public class Day18 implements Day<Long, String> {
       fallingBytes += 1;
       memory = getMemory(fallingBytes, size);
     }
-    return points.get(fallingBytes-1).toString();
+    return points.get(fallingBytes - 1).toString();
   }
 
   private boolean pathExists(Map<GridPoint, Integer> memory, GridPoint start, GridPoint end) {

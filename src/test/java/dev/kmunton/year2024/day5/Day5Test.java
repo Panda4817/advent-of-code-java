@@ -33,14 +33,14 @@ class Day5Test {
         47|29
         75|13
         53|13
-        
+                
         75,47,61,53,29
         97,61,53,29,13
         75,29,13
         75,97,47,61,53
         61,13,29
         97,13,75,29,47""".lines().toList();
-    day =  new Day5(input);
+    day = new Day5(input);
     assertEquals(143L, day.part1());
   }
 
@@ -68,14 +68,14 @@ class Day5Test {
         47|29
         75|13
         53|13
-        
+                
         75,47,61,53,29
         97,61,53,29,13
         75,29,13
         75,97,47,61,53
         61,13,29
         97,13,75,29,47""".lines().toList();
-    day =  new Day5(input);
+    day = new Day5(input);
     assertEquals(123L, day.part2());
   }
 

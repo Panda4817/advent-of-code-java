@@ -22,7 +22,7 @@ class Day4Test {
         SAXAMASAAA
         MAMMMXMMMM
         MXMXAXMASX""".lines().toList();
-    day =  new Day4(input);
+    day = new Day4(input);
     assertEquals(18L, day.part1());
   }
 
@@ -39,7 +39,7 @@ class Day4Test {
         SAXAMASAAA
         MAMMMXMMMM
         MXMXAXMASX""".lines().toList();
-    day =  new Day4(input);
+    day = new Day4(input);
     assertEquals(9L, day.part2());
   }
 

@@ -102,9 +102,11 @@ public class Day8 implements Day<Long, Long> {
 
   private void addAntiNodes(Set<GridPoint> antinodes, GridPoint point, int diffX, int diffY, boolean onlyOne) {
     GridPoint antinode = new GridPoint(point.x() + diffX, point.y() + diffY);
-    while(antinode.isInBounds(maxX, maxY)) {
+    while (antinode.isInBounds(maxX, maxY)) {
       antinodes.add(antinode);
-      if (onlyOne) break;
+      if (onlyOne) {
+        break;
+      }
       antinode = new GridPoint(antinode.x() + diffX, antinode.y() + diffY);
     }
   }

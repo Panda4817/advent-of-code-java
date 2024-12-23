@@ -75,25 +75,25 @@ public class Day13 implements Day<Long, Long> {
       long ay = claw.buttons().get(BUTTON_A).y();
       long bx = claw.buttons().get(BUTTON_B).x();
       long by = claw.buttons().get(BUTTON_B).y();
-      
+
       long bTop = (py * ax) - (px * ay);
       long bBottom = (ax * by) - (ay * bx);
       if (bTop % bBottom != 0) {
         return 0L;
       }
       long bPresses = bTop / bBottom;
-      
+
       long aTop = (py * bx) - (px * by);
       long aBottom = (ay * bx) - (ax * by);
       if (aTop % aBottom != 0) {
         return 0L;
       }
       long aPresses = aTop / aBottom;
-      
+
       if (aPresses < 0 || bPresses < 0) {
         return 0L;
       }
-      
+
       return (aPresses * 3) + (bPresses);
 
     }).mapToLong(l -> l).sum();

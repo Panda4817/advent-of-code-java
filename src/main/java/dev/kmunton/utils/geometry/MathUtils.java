@@ -12,9 +12,7 @@ import lombok.experimental.UtilityClass;
 public class MathUtils {
 
   /**
-   * Extended Euclidean Algorithm.
-   * Computes the GCD of two numbers and returns the coefficients (x, y) for:
-   * ax + by = gcd(a, b)
+   * Extended Euclidean Algorithm. Computes the GCD of two numbers and returns the coefficients (x, y) for: ax + by = gcd(a, b)
    *
    * @param a First integer
    * @param b Second integer
@@ -35,8 +33,10 @@ public class MathUtils {
       long newX = x0 - q * x1;
       long newY = y0 - q * y1;
 
-      x0 = x1; x1 = newX;
-      y0 = y1; y1 = newY;
+      x0 = x1;
+      x1 = newX;
+      y0 = y1;
+      y1 = newY;
     }
     return new long[]{a, x0, y0};
   }
@@ -62,8 +62,7 @@ public class MathUtils {
   }
 
   /**
-   * Applies the Chinese Remainder Theorem (CRT) to solve simultaneous congruences.
-   * Optimized for modular arithmetic with large numbers.
+   * Applies the Chinese Remainder Theorem (CRT) to solve simultaneous congruences. Optimized for modular arithmetic with large numbers.
    *
    * @param remainders A list of remainders.
    * @param moduli     A list of moduli.
@@ -135,7 +134,9 @@ public class MathUtils {
     if (mod <= 0) {
       throw new IllegalArgumentException("Modulus must be positive");
     }
-    if (mod == 1) return 0;
+    if (mod == 1) {
+      return 0;
+    }
 
     // Adjust base to be positive modulo mod
     base = ((base % mod) + mod) % mod;
@@ -214,7 +215,9 @@ public class MathUtils {
    * @return The nth Fibonacci number.
    */
   public static long fibonacci(int n) {
-    if (n <= 1) return n;
+    if (n <= 1) {
+      return n;
+    }
     long a = 0;
     long b = 1;
     for (int i = 2; i <= n; i++) {

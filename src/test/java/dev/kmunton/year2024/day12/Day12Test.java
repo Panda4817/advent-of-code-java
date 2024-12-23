@@ -81,12 +81,12 @@ class Day12Test {
             OOOOO
             OXOXO
             OOOOO""", 436L),
-    Arguments.of("""
+        Arguments.of("""
             AAAA
             BBCD
             BBCC
             EEEC""", 80L),
-        Arguments.of (
+        Arguments.of(
             """
                 EEEEE
                 EXXXX

@@ -25,7 +25,9 @@ public class CollectionsUtils {
       results.add(new ArrayList<>(tempList));
     } else {
       for (int i = 0; i < list.size(); i++) {
-        if (used[i]) continue; // Skip already used elements
+        if (used[i]) {
+          continue; // Skip already used elements
+        }
         used[i] = true;
         tempList.add(list.get(i));
         backtrackPermutations(results, tempList, list, used);

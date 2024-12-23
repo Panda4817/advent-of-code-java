@@ -22,7 +22,7 @@ class Day6Test {
         ........#.
         #.........
         ......#...""".lines().toList();
-    day =  new Day6(input);
+    day = new Day6(input);
     assertEquals(41L, day.part1());
   }
 
@@ -39,7 +39,7 @@ class Day6Test {
         ........#.
         #.........
         ......#...""".lines().toList();
-    day =  new Day6(input);
+    day = new Day6(input);
     assertEquals(6L, day.part2());
   }
 

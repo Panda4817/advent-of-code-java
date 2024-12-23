@@ -12,26 +12,26 @@ class Day2Test {
   @Test
   void part1_success() {
     List<String> input = """
-             7 6 4 2 1
-             1 2 7 8 9
-             9 7 6 2 1
-             1 3 2 4 5
-             8 6 4 4 1
-             1 3 6 7 9""".lines().toList();
-    day =  new Day2(input);
+        7 6 4 2 1
+        1 2 7 8 9
+        9 7 6 2 1
+        1 3 2 4 5
+        8 6 4 4 1
+        1 3 6 7 9""".lines().toList();
+    day = new Day2(input);
     assertEquals(2L, day.part1());
   }
 
   @Test
   void part2_success() {
     List<String> input = """
-             7 6 4 2 1
-             1 2 7 8 9
-             9 7 6 2 1
-             1 3 2 4 5
-             8 6 4 4 1
-             1 3 6 7 9""".lines().toList();
-    day =  new Day2(input);
+        7 6 4 2 1
+        1 2 7 8 9
+        9 7 6 2 1
+        1 3 2 4 5
+        8 6 4 4 1
+        1 3 6 7 9""".lines().toList();
+    day = new Day2(input);
     assertEquals(4L, day.part2());
   }
 }
