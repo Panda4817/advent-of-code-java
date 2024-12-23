@@ -1,8 +1,8 @@
 package dev.kmunton;
 
 import com.github.lalyos.jfiglet.FigletFont;
-import dev.kmunton.days.Day;
-import dev.kmunton.days.DefaultDay;
+import dev.kmunton.utils.days.Day;
+import dev.kmunton.utils.days.DefaultDay;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,9 +18,9 @@ public class Runner {
   private static final String INPUT_FILE = "input.txt";
 
   @SuppressWarnings("unchecked")
-  public static <T, R> Day<T, R> mapDayToClass(String day) {
+  public static <T, R> Day<T, R> mapDayToClass(String year, String day) {
     try {
-      Class<Day<T, R>> dayClass = (Class<Day<T, R>>) Class.forName("dev.kmunton.days.day" + day + ".Day" + day);
+      Class<Day<T, R>> dayClass = (Class<Day<T, R>>) Class.forName("dev.kmunton.year" + year + ".day" + day + ".Day" + day);
       var data = loadData(dayClass);
       Class<?>[] cArg = {List.class};
       return dayClass.getDeclaredConstructor(cArg).newInstance(data);
@@ -30,17 +30,17 @@ public class Runner {
   }
 
   public static <T, R> void main(String[] args) throws IOException {
-    String asciiArt = FigletFont.convertOneLine("Advent Of Code - 2024");
+    String asciiArt = FigletFont.convertOneLine("Advent Of Code");
     log.info("\n{}", asciiArt);
     if (args.length == 0) {
-      log.error("Provide day number");
+      log.error("Provide year and then day number e.g '2024,1'");
       return;
-    } else if (args.length > 1) {
-      log.error("Too many days provided. Provide one day.");
+    } else if (args.length > 2) {
+      log.error("Too many arguments provided. Provide one year and then one day e.g. '2024,23'");
       return;
     }
 
-    Day<T, R> ans = mapDayToClass(args[0]);
+    Day<T, R> ans = mapDayToClass(args[0], args[1]);
 
     final long startTimePart1 = System.currentTimeMillis();
     T part1 = ans.part1();
