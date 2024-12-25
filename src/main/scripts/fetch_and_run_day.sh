@@ -32,7 +32,9 @@ else
   echo " Failed to retrieve input data for year ${YEAR} day ${DAY}."
 fi
 
-# Use java 21
+# Use java 21 using sdkman
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 sdk use java 21.0.2-amzn
 
 # Run the Maven commands
