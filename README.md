@@ -21,3 +21,7 @@
 ## Test
 - ```mvn test``` run all tests
 - ```mvn test -Dtest=<test_class_name>``` run specific test class
+
+## Requirements
+- Java 21
+- Maven
