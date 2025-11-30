@@ -35,13 +35,13 @@ fi
 # Use java 21 using sdkman
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-sdk use java 21.0.2-amzn
+sdk use java 21.0.8-tem # Make sure this aligns with which java version is installed on the laptop
 
 # Run the Maven commands
 echo "Running Maven clean install..."
-/usr/local/Cellar/maven/3.9.9/bin/mvn -s /usr/local/Cellar/maven/3.9.9/libexec/conf/settings.xml clean install -DskipTests=true
+~/.sdkman/candidates/maven/current/bin/mvn -s ~/.sdkman/candidates/maven/current/conf/settings.xml clean install -DskipTests=true
 
 echo "Running Maven exec:java..."
-/usr/local/Cellar/maven/3.9.9/bin/mvn -s /usr/local/Cellar/maven/3.9.9/libexec/conf/settings.xml exec:java -Dexec.arguments="$YEAR","$DAY"
+~/.sdkman/candidates/maven/current/bin/mvn -s ~/.sdkman/candidates/maven/current/conf/settings.xml exec:java -Dexec.arguments="$YEAR","$DAY"
 
 echo "Script completed successfully!"
