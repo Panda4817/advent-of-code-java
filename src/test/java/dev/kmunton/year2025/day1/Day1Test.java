@@ -13,16 +13,34 @@ class Day1Test {
   @Test
   void part1_success() {
     List<String> input = """
-        fill with test data""".lines().toList();
+            L68
+            L30
+            R48
+            L5
+            R60
+            L55
+            L1
+            L99
+            R14
+            L82""".lines().toList();
     day = new Day1(input);
-    assertEquals(-1L, day.part1());
+    assertEquals(3L, day.part1());
   }
 
   @Test
   void part2_success() {
     List<String> input = """
-        fill with test data""".lines().toList();
+            L68
+            L30
+            R48
+            L5
+            R60
+            L55
+            L1
+            L99
+            R14
+            L82""".lines().toList();
     day = new Day1(input);
-    assertEquals(-1L, day.part2());
+    assertEquals(6L, day.part2());
   }
 }
