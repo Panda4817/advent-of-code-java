@@ -1,5 +1,6 @@
 package dev.kmunton.year2025.day4;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -10,19 +11,29 @@ class Day4Test {
 
   private static Day4 day;
 
+  @BeforeEach
+  void setUp() {
+      List<String> input = """
+            ..@@.@@@@.
+            @@@.@.@.@@
+            @@@@@.@.@@
+            @.@@@@..@.
+            @@.@@@@.@@
+            .@@@@@@@.@
+            .@.@.@.@@@
+            @.@@@.@@@@
+            .@@@@@@@@.
+            @.@.@@@.@.""".lines().toList();
+      day = new Day4(input);
+  }
+
   @Test
   void part1_success() {
-    List<String> input = """
-        fill with test data""".lines().toList();
-    day = new Day4(input);
-    assertEquals(-1L, day.part1());
+    assertEquals(13L, day.part1());
   }
 
   @Test
   void part2_success() {
-    List<String> input = """
-        fill with test data""".lines().toList();
-    day = new Day4(input);
-    assertEquals(-1L, day.part2());
+    assertEquals(43L, day.part2());
   }
 }
