@@ -1,5 +1,6 @@
 package dev.kmunton.year2025.day7;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -10,19 +11,35 @@ class Day7Test {
 
   private static Day7 day;
 
+  @BeforeEach
+  void setUp() {
+      List<String> input = """
+            .......S.......
+            ...............
+            .......^.......
+            ...............
+            ......^.^......
+            ...............
+            .....^.^.^.....
+            ...............
+            ....^.^...^....
+            ...............
+            ...^.^...^.^...
+            ...............
+            ..^...^.....^..
+            ...............
+            .^.^.^.^.^...^.
+            ...............""".lines().toList();
+      day = new Day7(input);
+  }
+
   @Test
   void part1_success() {
-    List<String> input = """
-        fill with test data""".lines().toList();
-    day = new Day7(input);
-    assertEquals(-1L, day.part1());
+    assertEquals(21L, day.part1());
   }
 
   @Test
   void part2_success() {
-    List<String> input = """
-        fill with test data""".lines().toList();
-    day = new Day7(input);
-    assertEquals(-1L, day.part2());
+    assertEquals(40L, day.part2());
   }
 }
