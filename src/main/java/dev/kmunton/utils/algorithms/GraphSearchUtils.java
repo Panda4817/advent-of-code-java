@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
+
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +28,7 @@ public class GraphSearchUtils {
    * Performs the A* search algorithm to find the shortest path from the start node to the goal node.
    *
    * @param start        The starting node.
-   * @param goal         The goal node.
+   * @param isGoal       Function to determine if goal reached
    * @param getNeighbors Function to get neighbors and their edge weights for a given node.
    * @param heuristic    Function to estimate the cost from a node to the goal.
    * @param <T>          The type of the nodes.
@@ -75,6 +76,67 @@ public class GraphSearchUtils {
 
     return List.of(); // No path found
   }
+
+    /**
+     * Performs the A* search algorithm to find the shortest path from the start node to the goal node.
+     *
+     * @param start        The starting node.
+     * @param isGoal       Function to determine if goal reached
+     * @param getNeighbors Function to get neighbors and their edge weights for a given node.
+     * @param heuristic    Function to estimate the cost from a node to the goal.
+     * @param addToGCostsTracker Function for custom key to gCost tracker
+     * @param <T>          The type of the nodes.
+     * @return A list representing the shortest path from start to goal, or an empty list if no path is found.
+     */
+    public static <T, R> List<T> aStarSearchWithCustomGCostTracker(
+            T start,
+            Predicate<T> isGoal,
+            Function<T, Map<T, Integer>> getNeighbors,
+            ToIntFunction<T> heuristic,
+            Function<T, R> addToGCostsTracker
+    ) {
+        PriorityQueue<Node<T>> openSet = new PriorityQueue<>();
+        Map<R, Integer> gCosts = new HashMap<>();
+        Map<T, T> cameFrom = new HashMap<>();
+        Set<T> openSetTracker = new HashSet<>();
+        Set<T> visited = new HashSet<>();
+
+        openSet.add(new Node<>(start, 0, heuristic.applyAsInt(start)));
+        gCosts.put(addToGCostsTracker.apply(start), 0);
+        openSetTracker.add(start);
+
+        while (!openSet.isEmpty()) {
+            Node<T> current = openSet.poll();
+            openSetTracker.remove(current.value);
+            visited.add(current.value);
+
+            if (isGoal.test(current.value)) {
+                return reconstructPath(cameFrom, current.value);
+            }
+
+            for (Map.Entry<T, Integer> neighborEntry : getNeighbors.apply(current.value).entrySet()) {
+                T neighbor = neighborEntry.getKey();
+                if (visited.contains(neighbor)) {
+                    continue;
+                }
+                R gCostKey = addToGCostsTracker.apply(neighbor);
+                int tentativeGCost = gCosts.get(addToGCostsTracker.apply(current.value)) + neighborEntry.getValue();
+
+                if (tentativeGCost < gCosts.getOrDefault(gCostKey, Integer.MAX_VALUE)) {
+                    cameFrom.put(neighbor, current.value);
+                    gCosts.put(gCostKey, tentativeGCost);
+
+                    int fCost = tentativeGCost + heuristic.applyAsInt(neighbor);
+                    if (!openSetTracker.contains(neighbor)) {
+                        openSet.add(new Node<>(neighbor, tentativeGCost, fCost));
+                        openSetTracker.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        return List.of(); // No path found
+    }
 
   public static <T, R> List<T> aStarSearchVisited(
       T start,
