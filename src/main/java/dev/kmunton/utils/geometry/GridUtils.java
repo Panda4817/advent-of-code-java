@@ -27,7 +27,39 @@ public class GridUtils<T> implements ShapeUtils<Map<GridPoint, T>, Direction2D> 
     };
   }
 
-  @Override
+    @Override
+    public Map<GridPoint, T> flipGivenDirection(Map<GridPoint, T> shape,  Direction2D direction) {
+        Map<GridPoint, T> flipped = new HashMap<>();
+
+        int maxX = maxX(shape);
+        int maxY = maxY(shape);
+
+        for (Map.Entry<GridPoint, T> entry : shape.entrySet()) {
+            GridPoint p = entry.getKey();
+            T value = entry.getValue();
+
+            int x = p.x();
+            int y = p.y();
+
+            GridPoint newPoint = switch (direction) {
+                case RIGHT ->
+                    // Mirror across the Y-axis: (x, y) → (-x, y)
+                        new GridPoint(maxX - x, y);
+                case UP ->
+                    // Mirror across the X-axis: (x, y) → (x, -y)
+                        new GridPoint(x, maxY - y);
+                default ->
+                    // No flip or unsupported direction
+                        p;
+            };
+
+            flipped.put(newPoint, value);
+        }
+
+        return flipped;
+    }
+
+    @Override
   public int maxX(Map<GridPoint, T> shape) {
     return shape.keySet().stream()
                 .mapToInt(GridPoint::x)

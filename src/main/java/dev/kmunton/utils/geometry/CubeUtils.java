@@ -12,7 +12,12 @@ public class CubeUtils implements ShapeUtils<Map<CubePoint, String>, Direction3D
     return Map.of(); // Not implemented yet
   }
 
-  @Override
+    @Override
+    public Map<CubePoint, String> flipGivenDirection(Map<CubePoint, String> shape, Direction3D direction) {
+        return Map.of(); // Not implemented yet
+    }
+
+    @Override
   public int maxX(Map<CubePoint, String> shape) {
     return shape.keySet().stream()
                 .mapToInt(CubePoint::x)

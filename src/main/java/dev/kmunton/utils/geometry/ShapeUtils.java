@@ -4,6 +4,8 @@ public interface ShapeUtils<S, D> {
 
   S rotateGivenDirection(S shape, int degrees, D direction);
 
+  S flipGivenDirection(S shape, D direction);
+
   int maxX(S shape);
 
   int maxY(S shape);
