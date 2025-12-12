@@ -65,7 +65,7 @@ public class Day12 implements Day<Long, Long> {
           List<Integer> whichPresents = grid.subList(2, grid.size());
           long area = (long) x * y;
           long totalPresentSquares = 0L;
-          for (int i = 0; i < whichPresents.size() - 1 ; i++) {
+          for (int i = 0; i < whichPresents.size(); i++) {
               long numberOfPresents = whichPresents.get(i);
               long squaresUsed = numberOfPresents * totalSquaresPerPresent.get(i);
               totalPresentSquares += squaresUsed;
